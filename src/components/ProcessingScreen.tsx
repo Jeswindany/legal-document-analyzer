@@ -22,14 +22,6 @@ export default function ProcessingScreen() {
           Extracting clauses, summarizing content, and preparing insights. This may take a few moments.
         </p>
       </motion.div>
-      <div className="mt-10 w-64 h-1.5 rounded-full bg-secondary overflow-hidden">
-        <motion.div
-          className="h-full rounded-full bg-primary"
-          initial={{ width: "0%" }}
-          animate={{ width: "100%" }}
-          transition={{ duration: 4, ease: "easeInOut", repeat: Infinity }}
-        />
-      </div>
     </div>
   );
 }
