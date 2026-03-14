@@ -7,7 +7,7 @@ import ProcessingScreen from "@/components/ProcessingScreen";
 import DocumentSummary from "@/components/DocumentSummary";
 import ImportantClauses from "@/components/ImportantClauses";
 import DocumentChat from "@/components/DocumentChat";
-import { analyzeDocument, fetchResults, AnalysisResult } from "@/lib/api";
+import { analyzeDocument, fetchResults, AnalysisResult, ClauseExtractionResult, classifyClauses } from "@/lib/api";
 import { motion } from "framer-motion";
 
 type AppState = "upload" | "processing" | "results";
@@ -17,16 +17,26 @@ const Index = () => {
   const [state, setState] = useState<AppState>("upload");
   const [file, setFile] = useState<File | null>(null);
   const [result, setResult] = useState<AnalysisResult | null>(null);
+  const [importantClauses, setImportantClauses] = useState<ClauseExtractionResult | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   const handleAnalyze = useCallback(async () => {
     if (!file) return;
+
     setState("processing");
     setError(null);
+
     try {
       const { documentId } = await analyzeDocument(file);
-      const data = await fetchResults(documentId);
-      setResult(data);
+
+      const [analysisData, clauseData] = await Promise.all([
+        fetchResults(documentId),
+        classifyClauses(file),
+      ]);
+
+      setResult(analysisData);
+      setImportantClauses(clauseData);
+
       setState("results");
     } catch {
       setError("Analysis failed. Please try again.");
@@ -108,7 +118,7 @@ const Index = () => {
             <DocumentSummary summary={result.summary} />
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              <ImportantClauses clauses={result.clauses} />
+              <ImportantClauses clauses={importantClauses} />
               <DocumentChat documentId={result.documentId} />
             </div>
 
